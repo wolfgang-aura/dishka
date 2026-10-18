@@ -167,6 +167,16 @@ def test_anyof_literal(provides: object) -> None:
     assert container.get(int) == 1357
 
 
+def test_anyof_literal_alias_from_child_scope() -> None:
+    provider = Provider(scope=Scope.APP)
+    provider.provide(lambda: 1357, provides=AnyOf[Literal["a"], int])
+    child_provider = Provider(scope=Scope.REQUEST)
+    child_provider.alias(source=Literal["a"], provides=float)
+    container = make_container(provider, child_provider)
+    with container() as request_container:
+        assert request_container.get(float) == 1357
+
+
 if HAS_PY_311:
     class SelfFactory:
         @classmethod
